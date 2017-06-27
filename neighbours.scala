@@ -55,7 +55,7 @@ class KNNRegressor[T <: Product](private var k: Int) {
     }
 
     (qSquared
-      .select(qSquared("sq").plus(pSquared))
+      .select(qSquared("sq") + pSquared)
       .collect.map(_(0).asInstanceOf[Double]), prod).zipped.map((l,r) => l + r)
   }
 
