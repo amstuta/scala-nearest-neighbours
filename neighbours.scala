@@ -20,16 +20,54 @@ object Utils {
 }
 
 
-object KNNRegressor {
+object KNN {
 
   /** Returns a trained KNNRegressor algorithm
    *
    * @param k         Number of neighbours to use for prediction
    * @param features  Dataset[Row] containing the training features
-   * @param targets   Dataset[Double] containing the training targets
+   * @param targets   Dataset[T:Numeric] containing the training targets
    */
-  def trainRegressor(k: Int, features: Dataset[Row], targets: Dataset[Double]) =
+  def trainRegressor[T:Numeric](k: Int, features: Dataset[Row], targets: Dataset[T]) =
     new KNNRegressor(k, features, targets)
+
+
+  /** Returns a trained KNNClassifier algorithm
+   *
+   * @param k         Number of neighbours to use for prediction
+   * @param features  Dataset[Row] containing the training features
+   * @param targets   Dataset[T] containing the training targets
+   */
+  def trainClassifier[T](k: Int, features: Dataset[Row], targets: Dataset[T]) =
+    new KNNClassifier(k, features, targets)
+}
+
+
+/** K-nearest neighbours algorithm for classification problems.
+ *
+ * @param k         Number of neighbours to use for prediction
+ * @param features  Dataset[Row] containing the training features
+ * @param labels    Dataset[T] containing the training targets
+ */
+sealed class KNNClassifier[T](protected val k: Int,
+                                     protected val features: Dataset[Row],
+                                     protected val labels: Dataset[T])
+                                     extends KNN[T] {
+
+   /** Predicts a class given a particular feature.
+    *
+    * @param feature Row composed of Double objects
+    * @return  Predicted value of type T
+    */
+  def predict(feature: Row): T = {
+    val distances = getDistances(feature).zipWithIndex.sortWith {
+      case ((valA, idxA), (valB, idxB)) => valA < valB
+    }
+    val indices = distances.take(k).map(_._2)
+    labels.collect.zipWithIndex.filter { case (v, idx) =>
+      indices.contains(idx)
+    }.map(_._1).toSeq.groupBy(identity).maxBy(_._2.size)._1
+  }
 
 }
 
@@ -38,27 +76,39 @@ object KNNRegressor {
  *
  * @param k         Number of neighbours to use for prediction
  * @param features  Dataset[Row] containing the training features
- * @param labels    Dataset[Double] containing the training targets
+ * @param labels    Dataset[T:Numeric] containing the training targets
  */
-private[neighbours] class KNNRegressor(private val k: Int,
-                                      private val features: Dataset[Row],
-                                      private val labels: Dataset[Double]) {
+sealed class KNNRegressor[T:Numeric](protected val k: Int,
+                                     protected val features: Dataset[Row],
+                                     protected val labels: Dataset[T])
+                                     extends KNN[T] {
 
-
-  /** Predicts a Double value given a feature.
+  /** Predicts a value given a particular feature.
    *
    * @param feature Row composed of Double objects
-   * @return  Predicted value as a Double
+   * @return  Predicted value of type T
    */
-  def predict(feature: Row): Double = {
+  def predict(feature: Row): T = {
     val distances = getDistances(feature).zipWithIndex.sortWith {
       case ((valA, idxA), (valB, idxB)) => valA < valB
     }
     val indices = distances.take(k).map(_._2)
     labels.collect.zipWithIndex.filter { case (v, idx) =>
       indices.contains(idx)
-    }.map(_._1).toSeq.avg
+    }.map(_._1).toSeq.avg.asInstanceOf[T]
   }
+
+}
+
+
+sealed trait KNN[T] {
+
+  protected val k: Int
+  protected val features: Dataset[Row]
+  protected val labels:   Dataset[T]
+
+
+  def predict(feature: Row): T
 
 
   /** Calculates the distances between an example and the training features.
