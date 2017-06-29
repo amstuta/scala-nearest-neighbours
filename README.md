@@ -13,6 +13,8 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.DoubleType
+import com.neighbours.KNNRegressor
+
 
 val spark = SparkSession
   .builder()
@@ -55,4 +57,6 @@ val testTargs = spark.createDataset(
 (testFeats.collect, testTargs.collect).zipped.foreach { (f,t) =>
   println(knn.predict(f), t)
 }
+
+spark.stop
 ```
