@@ -44,8 +44,7 @@ val feats = train.drop("_c5")
 feats.show
 targs.show
 
-val knn = new KNNRegressor(k=3)
-knn.fit(feats, targs)
+val knn = KNNRegressor.trainRegressor(1, feats, targs)
 
 val testFeats = test.drop("_c5")
 val testTargs = spark.createDataset(
