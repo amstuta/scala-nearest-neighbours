@@ -7,6 +7,7 @@ import scala.language.reflectiveCalls
 import Utils._
 
 
+/** Helper object to add an average function to numeric iterables */
 object Utils {
 
   def average[T](ts: Iterable[T])(implicit num: Numeric[T]) = {
@@ -21,17 +22,34 @@ object Utils {
 
 object KNNRegressor {
 
+  /** Returns a trained KNNRegressor algorithm
+   *
+   * @param k         Number of neighbours to use for prediction
+   * @param features  Dataset[Row] containing the training features
+   * @param targets   Dataset[Double] containing the training targets
+   */
   def trainRegressor(k: Int, features: Dataset[Row], targets: Dataset[Double]) =
     new KNNRegressor(k, features, targets)
 
 }
 
 
+/** K-nearest neighbours algorithm for regression problems.
+ *
+ * @param k         Number of neighbours to use for prediction
+ * @param features  Dataset[Row] containing the training features
+ * @param labels    Dataset[Double] containing the training targets
+ */
 private[neighbours] class KNNRegressor(private val k: Int,
                                       private val features: Dataset[Row],
                                       private val labels: Dataset[Double]) {
 
 
+  /** Predicts a Double value given a feature.
+   *
+   * @param feature Row composed of Double objects
+   * @return  Predicted value as a Double
+   */
   def predict(feature: Row): Double = {
     val distances = getDistances(feature).zipWithIndex.sortWith {
       case ((valA, idxA), (valB, idxB)) => valA < valB
@@ -43,6 +61,12 @@ private[neighbours] class KNNRegressor(private val k: Int,
   }
 
 
+  /** Calculates the distances between an example and the training features.
+   *
+   * @param feature Row composed of Double objects
+   * @return  A Seq[Double] containing the distance between each training
+   *          example and the given row
+   */
   def getDistances(feature: Row): Seq[Double] = {
     val feat = feature.toSeq
     val pSquared = feat.map(_.asInstanceOf[Double]).map(v => v * v).reduce(_+_)
