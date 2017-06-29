@@ -19,16 +19,17 @@ object Utils {
 }
 
 
-class KNNRegressor(private var k: Int) {
+object KNNRegressor {
 
-  private var features: Dataset[Row] = _
-  private var labels:   Dataset[Double] = _
+  def trainRegressor(k: Int, features: Dataset[Row], targets: Dataset[Double]) =
+    new KNNRegressor(k, features, targets)
+
+}
 
 
-  def fit(features: Dataset[Row], targets: Dataset[Double]): Unit = {
-    this.features = features
-    this.labels   = targets
-  }
+private[neighbours] class KNNRegressor(private val k: Int,
+                                      private val features: Dataset[Row],
+                                      private val labels: Dataset[Double]) {
 
 
   def predict(feature: Row): Double = {
