@@ -32,10 +32,8 @@ class KNNRegressor(private var k: Int) {
 
 
   def predict(feature: Row): Double = {
-    val distances = getDistances(feature).zipWithIndex.sortWith { case (a, b) =>
-      val (valA, idxA) = a
-      val (valB, idxB) = b
-      valA < valB
+    val distances = getDistances(feature).zipWithIndex.sortWith {
+      case ((valA, idxA), (valB, idxB)) => valA < valB
     }
     val indices = distances.take(k).map(_._2)
     labels.collect.zipWithIndex.filter { case (v, idx) =>
