@@ -1,7 +1,10 @@
 # Scala/Spark nearest neighbours
 
-This project contains a simple implementation of a K-nearest neighbours algorithm
+This project contains simple implementations of a K-nearest neighbours algorithms
 written in Scala using Spark.
+There are two available algorithms:
+- Regression K-NN
+- Classification K-NN
 
 The dependencies of the project are:
 - spark-core
@@ -13,7 +16,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.DoubleType
-import com.neighbours.KNNRegressor
+import com.neighbours.KNN
 
 
 val spark = SparkSession
@@ -46,7 +49,7 @@ val feats = train.drop("_c5")
 feats.show
 targs.show
 
-val knn = KNNRegressor.trainRegressor(1, feats, targs)
+val knn = KNN.trainRegressor(1, feats, targs)
 
 val testFeats = test.drop("_c5")
 val testTargs = spark.createDataset(
