@@ -60,10 +60,9 @@ sealed class KNNClassifier[T](protected val k: Int,
     * @return  Predicted value of type T
     */
   def predict(feature: Row): T = {
-    val distances = getDistances(feature).zipWithIndex.sortWith {
+    val indices = getDistances(feature).zipWithIndex.sortWith {
       case ((valA, idxA), (valB, idxB)) => valA < valB
-    }
-    val indices = distances.take(k).map(_._2)
+    }.take(k).map(_._2)
     labels.collect.zipWithIndex.filter { case (v, idx) =>
       indices.contains(idx)
     }.map(_._1).toSeq.groupBy(identity).maxBy(_._2.size)._1
@@ -89,10 +88,9 @@ sealed class KNNRegressor[T:Numeric](protected val k: Int,
    * @return  Predicted value of type T
    */
   def predict(feature: Row): T = {
-    val distances = getDistances(feature).zipWithIndex.sortWith {
+    val indices = getDistances(feature).zipWithIndex.sortWith {
       case ((valA, idxA), (valB, idxB)) => valA < valB
-    }
-    val indices = distances.take(k).map(_._2)
+    }.take(k).map(_._2)
     labels.collect.zipWithIndex.filter { case (v, idx) =>
       indices.contains(idx)
     }.map(_._1).toSeq.avg.asInstanceOf[T]
