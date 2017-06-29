@@ -50,9 +50,9 @@ object KNN {
  * @param labels    Dataset[T] containing the training targets
  */
 sealed class KNNClassifier[T](protected val k: Int,
-                                     protected val features: Dataset[Row],
-                                     protected val labels: Dataset[T])
-                                     extends KNN[T] {
+                              protected val features: Dataset[Row],
+                              protected val labels: Dataset[T])
+                              extends KNN[T] {
 
    /** Predicts a class given a particular feature.
     *
